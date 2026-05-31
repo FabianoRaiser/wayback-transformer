@@ -3,9 +3,11 @@ import socket
 from urllib.parse import urlparse
 import shutil
 
+import os
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -63,28 +65,40 @@ def build_driver() -> webdriver.Chrome:
     options.add_argument("--single-process")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-software-rasterizer")
-    options.add_argument("--remote-debugging-port=9222")
     options.add_argument("--window-size=1280,900")
     options.add_argument(
         "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     )
 
-    # Tenta encontrar o Chromium em todos os paths comuns do Linux/Railway
+    # Força binary do Chromium do Nix se disponível
     for path in [
         shutil.which("chromium"),
         shutil.which("chromium-browser"),
         shutil.which("google-chrome"),
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
-        "/usr/bin/google-chrome",
         "/nix/var/nix/profiles/default/bin/chromium",
     ]:
-        if path:
+        if path and os.path.exists(path):
             options.binary_location = path
             break
 
-    return webdriver.Chrome(options=options)
+    # Tenta chromedriver do Nix primeiro, senão usa webdriver-manager
+    chromedriver_path = (
+        shutil.which("chromedriver")
+        or "/usr/bin/chromedriver"
+        or "/nix/var/nix/profiles/default/bin/chromedriver"
+    )
+
+    if chromedriver_path and os.path.exists(chromedriver_path):
+        service = Service(executable_path=chromedriver_path)
+    else:
+        from webdriver_manager.chrome import ChromeDriverManager
+        from webdriver_manager.core.os_manager import ChromeType
+        service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+
+    return webdriver.Chrome(service=service, options=options)
 
 
 def scrape(url: str) -> dict:
