@@ -1,8 +1,13 @@
 [phases.setup]
-aptPkgs = ["firefox-esr", "wget", "ca-certificates"]
+aptPkgs = ["wget", "ca-certificates", "libgtk-3-0", "libdbus-glib-1-2", "libxt6"]
 
 [phases.install]
-cmds = ["pip install -r requirements.txt"]
+cmds = [
+  "wget -q 'https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=pt-BR' -O /tmp/firefox.tar.bz2",
+  "tar -xjf /tmp/firefox.tar.bz2 -C /opt/",
+  "ln -sf /opt/firefox/firefox /usr/local/bin/firefox",
+  "pip install -r requirements.txt"
+]
 
 [start]
 cmd = "python app.py"

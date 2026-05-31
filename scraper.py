@@ -60,10 +60,9 @@ def build_driver() -> webdriver.Firefox:
     options.add_argument("--height=900")
 
     firefox_path = (
-        shutil.which("firefox-esr")
-        or shutil.which("firefox")
-        or "/usr/bin/firefox-esr"
-        or "/usr/bin/firefox"
+        shutil.which("firefox")
+        or "/usr/local/bin/firefox"
+        or "/opt/firefox/firefox"
     )
 
     print(f"[scraper] Firefox path: {firefox_path}", flush=True)
