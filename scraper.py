@@ -1,7 +1,5 @@
 import ipaddress
-import os
 import socket
-import shutil
 import time
 from urllib.parse import urlparse
 
@@ -59,16 +57,9 @@ def build_driver() -> webdriver.Firefox:
     options.add_argument("--width=1280")
     options.add_argument("--height=900")
 
-    firefox_path = (
-        shutil.which("firefox")
-        or "/usr/local/bin/firefox"
-        or "/opt/firefox/firefox"
-    )
+    options.binary_location = "/usr/bin/firefox-esr"
 
-    print(f"[scraper] Firefox path: {firefox_path}", flush=True)
-    options.binary_location = firefox_path
-
-    service = Service(GeckoDriverManager().install())
+    service = Service("/usr/local/bin/geckodriver")
     return webdriver.Firefox(service=service, options=options)
 
 
