@@ -1,16 +1,14 @@
 import ipaddress
 import socket
-from urllib.parse import urlparse
 import shutil
-
-import os
+import time
+from urllib.parse import urlparse
 
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+from webdriver_manager.firefox import GeckoDriverManager
 
 
 BLOCKED_HOSTS = {"localhost", "0.0.0.0"}
@@ -26,7 +24,6 @@ BLOCKED_NETWORKS = [
 
 
 def validate_url(url: str) -> str:
-    """Validate and sanitize URL. Raises ValueError on invalid/unsafe URLs."""
     url = url.strip()
     parsed = urlparse(url)
 
@@ -40,7 +37,6 @@ def validate_url(url: str) -> str:
     if host.lower() in BLOCKED_HOSTS:
         raise ValueError(f"Host bloqueado por segurança: {host}")
 
-    # Resolve hostname to IP and check for private ranges
     try:
         ip_str = socket.gethostbyname(host)
         ip = ipaddress.ip_address(ip_str)
@@ -56,57 +52,21 @@ def validate_url(url: str) -> str:
     return url
 
 
-def build_driver() -> webdriver.Chrome:
+def build_driver() -> webdriver.Firefox:
     options = Options()
-    options.add_argument("--headless=new")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--single-process")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-software-rasterizer")
-    options.add_argument("--window-size=1280,900")
-    options.add_argument(
-        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    )
+    options.add_argument("--headless")
+    options.add_argument("--width=1280")
+    options.add_argument("--height=900")
 
-    # Força binary do Chromium do Nix se disponível
-    for path in [
-        shutil.which("chromium"),
-        shutil.which("chromium-browser"),
-        shutil.which("google-chrome"),
-        "/usr/bin/chromium",
-        "/usr/bin/chromium-browser",
-        "/nix/var/nix/profiles/default/bin/chromium",
-    ]:
-        if path and os.path.exists(path):
-            options.binary_location = path
-            break
+    firefox_path = shutil.which("firefox")
+    if firefox_path:
+        options.binary_location = firefox_path
 
-    # Tenta chromedriver do Nix primeiro, senão usa webdriver-manager
-    chromedriver_path = (
-        shutil.which("chromedriver")
-        or "/usr/bin/chromedriver"
-        or "/nix/var/nix/profiles/default/bin/chromedriver"
-    )
-
-    if chromedriver_path and os.path.exists(chromedriver_path):
-        service = Service(executable_path=chromedriver_path)
-    else:
-        from webdriver_manager.chrome import ChromeDriverManager
-        from webdriver_manager.core.os_manager import ChromeType
-        service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
-
-    return webdriver.Chrome(service=service, options=options)
+    service = Service(GeckoDriverManager().install())
+    return webdriver.Firefox(service=service, options=options)
 
 
 def scrape(url: str) -> dict:
-    """
-    Scrape a single landing page.
-    Returns dict with keys: page_source, title, final_url
-    Raises ValueError for bad URLs, RuntimeError for scraping failures.
-    """
     url = validate_url(url)
     driver = None
     try:
@@ -114,14 +74,11 @@ def scrape(url: str) -> dict:
         driver.set_page_load_timeout(20)
         driver.get(url)
 
-        # Wait for page to be ready
         WebDriverWait(driver, 15).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
 
-        # Scroll a bit to trigger lazy loading
         driver.execute_script("window.scrollTo(0, 600);")
-        import time
         time.sleep(1)
         driver.execute_script("window.scrollTo(0, 0);")
 
@@ -136,7 +93,7 @@ def scrape(url: str) -> dict:
             "page_source": page_source,
             "title": title,
             "final_url": final_url,
-            "driver": driver,  # keep alive for colors extraction
+            "driver": driver,
         }
     except ValueError:
         if driver:
