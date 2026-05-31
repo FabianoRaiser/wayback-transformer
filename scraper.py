@@ -59,31 +59,14 @@ def build_driver() -> webdriver.Firefox:
     options.add_argument("--width=1280")
     options.add_argument("--height=900")
 
-    # Busca o Firefox em todos os paths possíveis do Nix/Linux
-    firefox_path = None
-    candidates = [
-        shutil.which("firefox"),
-        shutil.which("firefox-esr"),
-        "/usr/bin/firefox",
-        "/usr/bin/firefox-esr",
-        "/run/current-system/sw/bin/firefox",
-    ]
+    firefox_path = (
+        shutil.which("firefox-esr")
+        or shutil.which("firefox")
+        or "/usr/bin/firefox-esr"
+        or "/usr/bin/firefox"
+    )
 
-    # Busca dinâmica nos paths do Nix
-    import glob
-    candidates += glob.glob("/nix/store/*/bin/firefox")
-    candidates += glob.glob("/nix/var/nix/profiles/*/bin/firefox")
-
-    for path in candidates:
-        if path and os.path.exists(path):
-            firefox_path = path
-            break
-
-    print(f"[scraper] Firefox encontrado em: {firefox_path}", flush=True)
-
-    if not firefox_path:
-        raise RuntimeError("Firefox não encontrado no sistema.")
-
+    print(f"[scraper] Firefox path: {firefox_path}", flush=True)
     options.binary_location = firefox_path
 
     service = Service(GeckoDriverManager().install())
