@@ -60,18 +60,29 @@ def build_driver() -> webdriver.Chrome:
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-gpu")
-    options.add_argument("--single-process")       # importante no Railway
+    options.add_argument("--single-process")
     options.add_argument("--disable-extensions")
+    options.add_argument("--disable-software-rasterizer")
+    options.add_argument("--remote-debugging-port=9222")
     options.add_argument("--window-size=1280,900")
     options.add_argument(
         "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     )
 
-    # Usa o Chromium do sistema se disponível (Railway/Linux)
-    chrome_path = shutil.which("chromium") or shutil.which("chromium-browser")
-    if chrome_path:
-        options.binary_location = chrome_path
+    # Tenta encontrar o Chromium em todos os paths comuns do Linux/Railway
+    for path in [
+        shutil.which("chromium"),
+        shutil.which("chromium-browser"),
+        shutil.which("google-chrome"),
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/google-chrome",
+        "/nix/var/nix/profiles/default/bin/chromium",
+    ]:
+        if path:
+            options.binary_location = path
+            break
 
     return webdriver.Chrome(options=options)
 
