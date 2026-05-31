@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wayback Landing Transformer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #2a2a3d;
+    --accent: #7c5cbf;
+    --accent2: #c55fa0;
+    --text: #e0ddf0;
+    --text-muted: #7a7890;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .logo-title {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .logo-ascii {
+    font-size: 9px;
+    color: var(--accent);
+    opacity: 0.4;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .url-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .url-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124, 92, 191, 0.15);
+  }
+  .url-input::placeholder { color: var(--text-muted); }
+
+  .btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .status {
+    margin-top: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+  }
+  .status.loading {
+    display: block;
+    background: rgba(124, 92, 191, 0.1);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status.error {
+    display: block;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid var(--red);
+    color: var(--red);
+  }
+  .status.success {
+    display: block;
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid var(--green);
+    color: var(--green);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-steps {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+  .step { opacity: 0.4; transition: opacity 0.3s; }
+  .step.active { opacity: 1; color: var(--accent); }
+  .step.done { opacity: 0.7; color: var(--green); }
+
+  .caveats {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  .caveats li { margin-left: 16px; }
+
+  .examples {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .example-url {
+    display: inline-block;
+    margin: 3px 4px;
+    padding: 2px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    font-family: 'Courier New', monospace;
+  }
+  .example-url:hover { border-color: var(--accent); color: var(--text); }
+
+  .disclaimer {
+    margin-top: 24px;
+    padding: 16px 20px;
+    border: 1px solid #2a2a3d;
+    border-left: 3px solid #555;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .disclaimer-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #555;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  .disclaimer p { margin-bottom: 8px; }
+  .disclaimer strong { color: #888; }
+  .disclaimer-footer {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #222;
+    font-size: 10px;
+    color: #444;
+    margin-bottom: 0 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="logo">
+    <div class="logo-ascii">
+░██╗░░░░░░░██╗░█████╗░██╗░░░██╗██████╗░░█████╗░░█████╗░██╗░░██╗<br>
+░██║░░██╗░░██║██╔══██╗╚██╗░██╔╝██╔══██╗██╔══██╗██╔══██╗██║░██╔╝<br>
+░╚██╗████╗██╔╝███████║░╚████╔╝░██████╦╝███████║██║░░╚═╝█████═╝░<br>
+░░████╔═████║░██╔══██║░░╚██╔╝░░██╔══██╗██╔══██║██║░░██╗██╔═██╗░<br>
+    </div>
+    <div class="logo-title">WAYBACK TRANSFORMER</div>
+    <div class="logo-sub">Landing Page → Geocities 2002</div>
+  </div>
+
+  <div class="card">
+    <label class="field-label" for="url-input">URL da Landing Page</label>
+    <input
+      id="url-input"
+      class="url-input"
+      type="url"
+      placeholder="https://stripe.com"
+      autocomplete="off"
+      spellcheck="false"
+    >
+    <button class="btn" id="transform-btn" onclick="transform()">
+      ⏪ &nbsp;TRANSFORMAR
+    </button>
+
+    <div id="status" class="status"></div>
+    <div id="progress" class="progress-steps" style="display:none;">
+      <div id="step1" class="step">▸ Carregando página com Selenium...</div>
+      <div id="step2" class="step">▸ Extraindo conteúdo e cores...</div>
+      <div id="step3" class="step">▸ Gerando HTML estilo Geocities...</div>
+      <div id="step4" class="step">▸ Preparando download...</div>
+    </div>
+
+    {% if error %}
+    <div class="status error" style="display:block;">
+      ❌ {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="examples">
+      Experimente:
+      <span class="example-url" onclick="setUrl('https://stripe.com')">stripe.com</span>
+      <span class="example-url" onclick="setUrl('https://linear.app')">linear.app</span>
+      <span class="example-url" onclick="setUrl('https://vercel.com')">vercel.com</span>
+      <span class="example-url" onclick="setUrl('https://notion.so')">notion.so</span>
+    </div>
+  </div>
+
+  <ul class="caveats">
+    <li>SPAs pesadas podem renderizar pouco conteúdo</li>
+    <li>Imagens dependem do site original estar online</li>
+    <li>Sites com login/paywall não funcionam</li>
+    <li>Pode demorar 10–20 segundos (Selenium headless)</li>
+  </ul>
+
+  <div class="disclaimer">
+    <div class="disclaimer-title">⚖️ Aviso Legal</div>
+    <p>
+      Este é um <strong>projeto educacional e de paródia</strong>, desenvolvido exclusivamente
+      para fins de estudo de web scraping, design retro e desenvolvimento web.
+    </p>
+    <p>
+      Todo o conteúdo gerado — textos, imagens, marcas, logotipos e demais elementos visuais —
+      <strong>pertence integralmente aos seus respectivos proprietários originais</strong>.
+      Este projeto não reivindica qualquer direito sobre o material de terceiros.
+    </p>
+    <p>
+      A transformação estética aplicada é uma <strong>paródia artística de caráter humorístico</strong>,
+      sem fins comerciais, e não tem a intenção de substituir, concorrer ou depreciar os sites originais.
+    </p>
+    <p>
+      As páginas geradas são <strong>temporárias (5 minutos)</strong>, não são indexadas,
+      armazenadas permanentemente nem distribuídas. Nenhum dado pessoal é coletado.
+    </p>
+    <p class="disclaimer-footer">
+      Ao utilizar esta ferramenta, você concorda em usá-la apenas para fins pessoais,
+      educacionais ou de entretenimento, sem violar os Termos de Serviço dos sites acessados.
+      O autor não se responsabiliza pelo uso indevido da ferramenta.
+    </p>
+  </div>
+
+</div>
+
+<script>
+function setUrl(url) {
+  document.getElementById('url-input').value = url;
+}
+
+let stepTimer = null;
+
+function startSteps() {
+  const steps = ['step1','step2','step3','step4'];
+  let i = 0;
+  steps.forEach(id => document.getElementById(id).className = 'step');
+  document.getElementById('progress').style.display = 'block';
+
+  function nextStep() {
+    if (i > 0) document.getElementById(steps[i-1]).className = 'step done';
+    if (i < steps.length) {
+      document.getElementById(steps[i]).className = 'step active';
+      i++;
+      stepTimer = setTimeout(nextStep, 3500);
+    }
+  }
+  nextStep();
+}
+
+function stopSteps() {
+  if (stepTimer) clearTimeout(stepTimer);
+  ['step1','step2','step3','step4'].forEach(id => {
+    document.getElementById(id).className = 'step done';
+  });
+}
+
+async function transform() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) {
+    showStatus('error', '⚠️ Por favor, informe uma URL.');
+    return;
+  }
+
+  const btn = document.getElementById('transform-btn');
+  btn.disabled = true;
+  showStatus('loading', '<span class="spinner"></span> Processando... isso pode levar ~15 segundos');
+  startSteps();
+
+  try {
+    const res = await fetch('/transform', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    stopSteps();
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      showStatus('error', '❌ ' + (data.error || 'Erro desconhecido. Tente outra URL.'));
+      return;
+    }
+
+    // Redirect to preview page
+    window.location.href = data.url;
+  } catch (e) {
+    stopSteps();
+    showStatus('error', '❌ Falha na requisição: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = 'status ' + type;
+  el.innerHTML = msg;
+}
+
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') transform();
+});
+</script>
+</body>
+</html>

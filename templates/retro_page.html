@@ -1,0 +1,425 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=800">
+<title>{{ content.title or 'Pagina Web' }} - Versao Retro</title>
+<style type="text/css">
+  body {
+    background-color: {{ colors.bg }};
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        {{ colors.bg }} 0px,
+        {{ colors.bg }} 8px,
+        {{ colors.table_bg }} 8px,
+        {{ colors.table_bg }} 9px
+      );
+    color: {{ colors.text }};
+    font-family: "Times New Roman", Times, serif;
+    margin: 0;
+    padding: 0;
+  }
+  a { color: {{ colors.link }}; text-decoration: underline; }
+  a:hover { color: {{ colors.accent }}; }
+  a:visited { color: {{ colors.accent_dark }}; }
+
+  .main-wrapper {
+    width: 800px;
+    margin: 0 auto;
+    background-color: {{ colors.bg }};
+    border-left: 3px solid {{ colors.accent }};
+    border-right: 3px solid {{ colors.accent }};
+  }
+
+  .site-header {
+    background-color: {{ colors.header_bg }};
+    border-bottom: 4px ridge {{ colors.accent }};
+    padding: 10px;
+    text-align: center;
+  }
+  .site-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: {{ colors.accent }};
+    text-shadow: 2px 2px {{ colors.accent_dark }};
+    font-family: Impact, "Arial Black", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .site-subtitle {
+    font-size: 14px;
+    color: {{ colors.link }};
+    font-style: italic;
+  }
+
+  marquee {
+    background-color: {{ colors.accent_dark }};
+    color: #ffff00;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 4px 0;
+    border-top: 2px solid {{ colors.accent }};
+    border-bottom: 2px solid {{ colors.accent }};
+  }
+
+  .layout-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .sidebar {
+    width: 180px;
+    background-color: {{ colors.nav_bg }};
+    border-right: 3px groove {{ colors.accent }};
+    vertical-align: top;
+    padding: 8px;
+  }
+  .main-content {
+    vertical-align: top;
+    padding: 10px;
+    background-color: {{ colors.bg }};
+  }
+
+  .box {
+    border: 2px ridge {{ colors.accent }};
+    background-color: {{ colors.table_bg }};
+    margin-bottom: 10px;
+    padding: 6px;
+  }
+  .box-title {
+    background-color: {{ colors.accent }};
+    color: #000000;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    padding: 3px;
+    margin: -6px -6px 6px -6px;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .hit-counter {
+    text-align: center;
+    background-color: #000000;
+    color: #00ff00;
+    font-family: "Courier New", monospace;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 6px;
+    border: 3px inset {{ colors.accent }};
+    letter-spacing: 4px;
+  }
+
+  .content-section {
+    margin-bottom: 12px;
+    border-bottom: 1px dashed {{ colors.accent }};
+    padding-bottom: 8px;
+  }
+  h1 { font-size: 22px; color: {{ colors.accent }}; margin: 6px 0; font-family: Impact, sans-serif; }
+  h2 { font-size: 18px; color: {{ colors.link }}; margin: 6px 0; }
+  h3 { font-size: 15px; color: {{ colors.accent }}; margin: 4px 0; }
+
+  p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 5px 0;
+    text-align: justify;
+  }
+
+  .retro-img {
+    border: 3px ridge {{ colors.accent }};
+    max-width: 100%;
+    display: block;
+    margin: 6px auto;
+  }
+
+  .guestbook-entry {
+    border: 1px solid {{ colors.accent }};
+    margin: 4px 0;
+    padding: 4px;
+    background-color: {{ colors.bg_light }};
+    font-size: 12px;
+  }
+  .guestbook-name {
+    color: {{ colors.accent }};
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+  }
+
+  .links-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .links-list li {
+    padding: 2px 0;
+    font-size: 12px;
+    border-bottom: 1px dotted {{ colors.accent }};
+  }
+  .links-list li::before {
+    content: "» ";
+    color: {{ colors.accent }};
+    font-weight: bold;
+  }
+
+  .footer-bar {
+    background-color: {{ colors.header_bg }};
+    border-top: 4px ridge {{ colors.accent }};
+    text-align: center;
+    padding: 10px;
+    font-size: 11px;
+    color: {{ colors.link }};
+    font-family: Arial, sans-serif;
+  }
+
+  .under-construction {
+    text-align: center;
+    background-color: #000000;
+    border: 4px dashed #ffff00;
+    padding: 15px;
+    margin: 10px;
+    color: #ffff00;
+    font-family: Impact, sans-serif;
+    font-size: 20px;
+    text-shadow: 1px 1px red;
+    animation: blinker 1s step-start infinite;
+  }
+  @keyframes blinker { 50% { opacity: 0; } }
+
+  .content-table {
+    width: 100%;
+    border: 1px solid {{ colors.accent }};
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .content-table td {
+    border: 1px solid {{ colors.accent }};
+    padding: 5px;
+    vertical-align: top;
+  }
+  .content-table th {
+    background-color: {{ colors.accent }};
+    color: #000;
+    padding: 4px;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  .visitor-badge {
+    text-align: center;
+    font-size: 11px;
+    color: {{ colors.link }};
+    margin: 4px 0;
+  }
+
+  .stars {
+    color: #ffff00;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  hr.retro { border: none; border-top: 3px double {{ colors.accent }}; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<div class="main-wrapper">
+
+  <!-- HEADER -->
+  <div class="site-header">
+    {% if content.logo_url %}
+    <img src="{{ content.logo_url }}" alt="Logo" style="max-height:60px; border:2px solid {{ colors.accent }}; margin-bottom:6px;" onerror="this.style.display='none'">
+    {% endif %}
+    <div class="site-title">{{ content.title or 'Bem-Vindo!' }}</div>
+    <div class="site-subtitle">
+      <blink>★ O MELHOR SITE DA INTERNET ★</blink>
+    </div>
+    <div class="stars">★★★★★★★★★★★★★★★★★★★★</div>
+  </div>
+
+  <!-- MARQUEE -->
+  <marquee behavior="scroll" direction="left" scrollamount="4">
+    &nbsp;&nbsp;&nbsp;
+    *** {{ marquee_text }} ***
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    *** VISITE SEMPRE!! ***
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    *** ADICIONE NOS FAVORITOS!! ***
+    &nbsp;&nbsp;&nbsp;
+  </marquee>
+
+  {% if not content.has_content %}
+  <div class="under-construction">
+    ⚠ EM CONSTRUÇÃO ⚠<br>
+    <span style="font-size:14px; color:#ffff00;">Esta página está sendo atualizada!</span>
+  </div>
+  {% endif %}
+
+  <!-- MAIN LAYOUT -->
+  <table class="layout-table">
+    <tr>
+
+      <!-- SIDEBAR -->
+      <td class="sidebar">
+
+        <!-- Hit Counter -->
+        <div class="box">
+          <div class="box-title">🔢 Visitas</div>
+          <div class="hit-counter">{{ hit_counter }}</div>
+          <div class="visitor-badge">você é o visitante<br><b>nº {{ hit_counter }}</b></div>
+        </div>
+
+        <!-- Navigator Banner -->
+        <div class="box" style="text-align:center;">
+          <div class="box-title">🌐 Browser</div>
+          <img src="https://web.archive.org/web/2004/http://browserhappy.com/images/ie_button.gif"
+               alt="IE6" style="max-width:100%;" onerror="this.style.display='none'">
+          <div style="font-size:10px; margin-top:4px; color:{{ colors.link }};">
+            Melhor em<br>Internet Explorer 6.0
+          </div>
+        </div>
+
+        <!-- Links nav -->
+        {% if content.links %}
+        <div class="box">
+          <div class="box-title">🔗 Links</div>
+          <ul class="links-list">
+            {% for link in content.links[:8] %}
+            <li><a href="{{ link.href }}" target="_blank">{{ link.text[:30] }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Guestbook -->
+        <div class="box">
+          <div class="box-title">📖 Livro de Visitas</div>
+          {% for entry in guestbook %}
+          <div class="guestbook-entry">
+            <div class="guestbook-name">{{ entry.name }} diz:</div>
+            <div>"{{ entry.msg }}"</div>
+          </div>
+          {% endfor %}
+          <div style="text-align:center; margin-top:6px;">
+            <a href="#" style="font-size:11px; color:{{ colors.accent }};">
+              [Assinar Livro]
+            </a>
+          </div>
+        </div>
+
+        <!-- Resolution badge -->
+        <div class="box" style="text-align:center; font-size:10px; color:{{ colors.link }};">
+          <div class="box-title">🖥️ Resolução</div>
+          Otimizado para<br><b>800x600</b><br>pixels
+        </div>
+
+      </td>
+
+      <!-- MAIN CONTENT -->
+      <td class="main-content">
+
+        <!-- Hero image -->
+        {% if content.hero_image %}
+        <div style="text-align:center; margin-bottom:10px;">
+          <img src="{{ content.hero_image }}" alt="Imagem principal"
+               class="retro-img" style="max-height:250px;"
+               onerror="this.style.display='none'">
+        </div>
+        {% endif %}
+
+        <!-- Headings & Paragraphs -->
+        {% set ns = namespace(h1_count=0) %}
+        {% for heading in content.headings %}
+          {% if heading.level == 'h1' %}
+            {% set ns.h1_count = ns.h1_count + 1 %}
+            <div class="content-section">
+              <h1>
+                <font color="{{ colors.accent }}">{{ heading.text }}</font>
+              </h1>
+            </div>
+          {% elif heading.level == 'h2' %}
+            <hr class="retro">
+            <h2><font color="{{ colors.link }}">◆ {{ heading.text }}</font></h2>
+          {% else %}
+            <h3>▶ {{ heading.text }}</h3>
+          {% endif %}
+        {% endfor %}
+
+        {% if content.paragraphs %}
+        <hr class="retro">
+        <table class="content-table">
+          <tr><th colspan="2">📄 Conteúdo da Página</th></tr>
+          {% for para in content.paragraphs %}
+            {% if loop.index is odd %}
+            <tr>
+              <td>{{ para }}</td>
+              {% if not loop.last %}
+              <td>{{ content.paragraphs[loop.index] if loop.index < content.paragraphs|length else '' }}</td>
+              {% else %}
+              <td>&nbsp;</td>
+              {% endif %}
+            </tr>
+            {% endif %}
+          {% endfor %}
+        </table>
+        {% endif %}
+
+        <!-- Images gallery -->
+        {% if content.images|length > 1 %}
+        <hr class="retro">
+        <div style="background-color:{{ colors.table_bg }}; border:2px ridge {{ colors.accent }}; padding:8px; margin-top:10px;">
+          <div style="text-align:center; font-weight:bold; font-family:Arial; font-size:12px; color:{{ colors.accent }}; text-transform:uppercase; margin-bottom:6px;">
+            📷 Galeria de Imagens
+          </div>
+          <table width="100%" cellpadding="4">
+            <tr>
+              {% for img in content.images[1:5] %}
+              <td style="text-align:center; width:25%;">
+                <img src="{{ img.src }}" alt="{{ img.alt }}"
+                     style="max-width:100%; max-height:90px; border:2px solid {{ colors.accent }};"
+                     onerror="this.style.display='none'">
+              </td>
+              {% if loop.index % 4 == 0 and not loop.last %}
+              </tr><tr>
+              {% endif %}
+              {% endfor %}
+            </tr>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- Original URL reference -->
+        <hr class="retro">
+        <div style="font-size:11px; font-family:Arial; text-align:center; color:{{ colors.link }}; margin-top:8px;">
+          <b>Fonte original:</b>
+          <a href="{{ source_url }}" target="_blank" style="color:{{ colors.accent }};">
+            {{ source_url[:60] }}{% if source_url|length > 60 %}...{% endif %}
+          </a>
+        </div>
+
+      </td>
+    </tr>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <hr class="retro">
+    🌐 Melhor visualizado no <b>Internet Explorer 6.0</b> |
+    Resolução <b>800x600</b> |
+    Última atualização: <b>{{ last_updated }}</b>
+    <br>
+    Copyright &copy; {{ year }} — Todos os direitos reservados | Feito com ❤️ e Geocities
+    <br><br>
+    <marquee behavior="alternate" scrollamount="2" style="font-size:10px; color:#ffff00;">
+      🌟 Obrigado pela visita!! Volte sempre!! Não se esqueça de assinar o livro de visitas!! 🌟
+    </marquee>
+    <div style="margin-top:6px; font-size:10px;">
+      <blink>⚡ Este site usa tecnologia de ponta — HTML 4.01 Transitional ⚡</blink>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
