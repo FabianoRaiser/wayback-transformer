@@ -4,6 +4,7 @@ import threading
 import time
 import os
 from urllib.parse import urlparse
+import subprocess
 
 from flask import Flask, render_template, request, Response, jsonify
 
@@ -133,6 +134,32 @@ def preview(page_id: str):
         html += banner
 
     return Response(html, mimetype="text/html; charset=utf-8")
+
+
+@app.route("/debug")
+def debug():
+    info = {}
+    
+    # Procura qualquer binário do Firefox
+    result = subprocess.run(["find", "/", "-name", "firefox*", "-type", "f"], 
+                           capture_output=True, text=True, timeout=10)
+    info["find_firefox"] = result.stdout.splitlines()
+    
+    # Verifica paths comuns
+    import shutil, os
+    info["which_firefox"] = shutil.which("firefox")
+    info["which_firefox_esr"] = shutil.which("firefox-esr")
+    info["opt_firefox"] = os.path.exists("/opt/firefox/firefox")
+    info["usr_local_firefox"] = os.path.exists("/usr/local/bin/firefox")
+    
+    # Lista /opt se existir
+    if os.path.exists("/opt/firefox"):
+        info["opt_firefox_ls"] = os.listdir("/opt/firefox")
+    
+    # Variáveis de ambiente relevantes
+    info["PATH"] = os.environ.get("PATH", "")
+    
+    return jsonify(info)
 
 
 if __name__ == "__main__":
